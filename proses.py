@@ -1,6 +1,3 @@
-# preprocess.py
-
-import streamlit as st
 import joblib
 import re
 from nltk.corpus import stopwords
@@ -14,9 +11,6 @@ nltk.download('punkt')
 nltk.download('stopwords')
 nltk.download('wordnet')
 
-stop_words = set(stopwords.words('english'))
-lemmatizer = WordNetLemmatizer()
-
 def upload_dataset(file):
      if file is not None:
         file_name = file.name if file.name is not None else "Unknown File"
@@ -24,7 +18,10 @@ def upload_dataset(file):
         return dataset, file_name
      return None, None
 
-def preprocess(text):
+def preprocess(text):    
+    stop_words = set(stopwords.words('english'))
+    lemmatizer = WordNetLemmatizer()
+    
     # Remove URL
     text = re.sub(r'https?://\S+|www\.\S+', '', str(text))
     # Remove emoji
