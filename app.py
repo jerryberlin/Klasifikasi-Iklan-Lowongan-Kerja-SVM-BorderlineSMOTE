@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import joblib
-from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
 from proses import upload_dataset, preprocess, tfidf, load_model, borderline_smote
 from klasifikasi import klasifikasi_svm, metrik_klasifikasi, prediksi_svm
@@ -9,8 +8,6 @@ from klasifikasi import klasifikasi_svm, metrik_klasifikasi, prediksi_svm
 st.write("""
 # KLASIFIKASI IKLAN LOWONGAN KERJA
 """)
-
-# -----------------Sidebar -------------------
 
 # Tombol untuk mengunggah dataset di sidebar
 def browsefiles_clicked():
@@ -26,12 +23,16 @@ algoritma = st.sidebar.selectbox("Pilih Algoritma", ["SVM", "SVM + Borderline-SM
 
 if(df is not None):
     if file_name is not None and "test" in file_name:
+        df.drop(['salary_range','job_id'], axis = 1, inplace = True)
+        df.fillna(" ",inplace = True)
+        df['text'] = df['title'] +  ' ' + df['department'] + ' ' + df['company_profile'] + ' ' + df['description'] + ' ' + df['requirements'] + ' ' + df['benefits'] + ' ' + df['employment_type'] + ' ' + df['required_education'] + ' ' + df['industry'] + ' ' + df['function'] 
+        df.drop(['title','department','company_profile','description','requirements','benefits','employment_type','required_experience','required_education','industry','function'], axis = 1, inplace = True)
 
         loaded_model = load_model(algoritma, c)
 
         df['text'] = df['text'].apply(preprocess)
 
-        df_tfidf_test = tfidf(df, joblib.load('model/5x.pkl'))
+        df_tfidf_test = tfidf(df, joblib.load('model/vocabulary.joblib'))
 
         y = df_tfidf_test['frauds']
         X = df_tfidf_test.drop(['frauds'], axis=1)
@@ -123,8 +124,6 @@ if(df is not None):
         # SVM Dengan Borderline-SMOTE
         elif algoritma == "SVM + Borderline-SMOTE":
             st.subheader("SVM + Borderline-SMOTE")
-
-            # st.subheader("Oversampling")
             
             X_train_res, y_train_res = borderline_smote(X_train, y_train)
             model = klasifikasi_svm(c, X_train_res, y_train_res)
